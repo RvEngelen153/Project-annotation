@@ -8,5 +8,4 @@ The goal of this research was to investigate if there was a better tool availabl
 This tool was used for this research as old method. 
 # Installation 
 To install this tool:
-<pre> ``` wget http://github.com/bbuchfink/diamond/releases/download/v2.1.11/diamond-linux64.tar.gz tar xzf diamond-linux64.tar.gz ``` </pre>
-
+<pre> To install this tool: ```bash wget http://github.com/bbuchfink/diamond/releases/download/v2.1.11/diamond-linux64.tar.gz tar xzf diamond-linux64.tar.gz ``` </pre>
