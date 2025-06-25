@@ -7,8 +7,6 @@ The goal of this research was to investigate if there was a better tool availabl
 # Diamondblastx
 This tool was used for this research as old method. 
 # Installation 
-To install this tool, the following command was used: 
-'''
-wget http://github.com/bbuchfink/diamond/releases/download/v2.1.11/diamond-linux64.tar.gz
-tar xzf diamond-linux64.tar.gz 
-'''
+To install this tool:
+<pre> ``` wget http://github.com/bbuchfink/diamond/releases/download/v2.1.11/diamond-linux64.tar.gz tar xzf diamond-linux64.tar.gz ``` </pre>
+
