@@ -230,7 +230,95 @@ Overview of the final_assignments.csv output:
 | 18            | subfamily (prediction)| Predicted subfamily                            |
 | 19            | genus (Reference) | Genus according to the reference                   |
 | 20            | genus (prediction)| Predicted genus                                  |
-
 | 21            | network           | Network or clustering group assignment           |
 
+# python script to select top 20 viruses vcontact3 
+<pre>import pandas as pd
+import re
+import matplotlib.pyplot as plt
+
+# Load the CSV file
+csv_path = "/mnt/StudentFiles/2025/2025MBI04/output_vcontact3/UDI38/exports/final_assignments.csv"  # <-- adjust if needed
+df = pd.read_csv(csv_path)
+
+# Column with the original GenomeName
+genome_col = "GenomeName"
+
+# Remove digits at the end (e.g., "_1", "_34")
+def remove_digits(name):
+    return re.sub(r"_\d+$", "", str(name))
+
+# Add a cleaned column
+df["GenomeName_cleaned"] = df[genome_col].apply(remove_digits)
+
+# Top 20 most frequent names
+top20_counts = df["GenomeName_cleaned"].value_counts().head(20)
+
+# Save as CSV file
+output_csv = "/mnt/StudentFiles/2025/2025MBI04/output_vcontact3/UDI38/processed_data/UDI38_top20_genomename_cleaned.csv"
+top20_counts.to_csv(output_csv, header=["count"])
+print(f"Top 20 saved as: {output_csv}")
+
+# Create bar chart
+plt.figure(figsize=(10, 6))
+top20_counts.plot(kind="bar", color="skyblue")
+plt.title("Top 20 Most Frequent GenomeNames (cleaned)")
+plt.xlabel("GenomeName (without suffix)")
+plt.ylabel("Count")
+plt.xticks(rotation=45, ha='right')
+plt.tight_layout()
+
+# Save the plot
+output_plot = "/mnt/StudentFiles/2025/2025MBI04/output_vcontact3/UDI38/processed_data/UDI38_top20_genomename_cleaned.png"
+plt.savefig(output_plot)
+print(f"Plot saved as: {output_plot}")
+</pre>
+# python script to select top 20 virusfamilies 
+<pre>import pandas as pd
+
+# Load the file (adjust the path if needed)
+df = pd.read_csv("/mnt/StudentFiles/2025/2025MBI04/output_vcontact3/UDI38/exports/final_assignments.csv")
+
+# Count the number of viruses per predicted family (including missing values)
+family_counts = df['family (prediction)'].value_counts(dropna=False).reset_index()
+family_counts.columns = ['Predicted Family', 'Count']
+
+# Sort and display the top 20
+top_20_families = family_counts.sort_values(by='Count', ascending=False).head(20)
+
+# Optional: print the table
+print(top_20_families)
+
+# Optional: save as CSV file
+top_20_families.to_csv("UDI38_top_20_families.csv", index=False)
+</pre>
+# python script to create an overview of all samples
+<pre>import pandas as pd
+
+# Path to your Excel file
+file_path = "vcontact3 output most common viruses.xlsx"
+
+# Read the Excel file and load all sheets
+xls = pd.ExcelFile(file_path)
+all_samples = {sheet: xls.parse(sheet) for sheet in xls.sheet_names}
+
+# Process each sheet and ensure consistent column names
+for sample, df in all_samples.items():
+    df.columns = ["GenomName_cleaned", "count"]
+    all_samples[sample] = df
+
+# Combine all samples into a summary table
+combined_df = pd.concat([
+    df.set_index("GenomName_cleaned").rename(columns={"count": sample})
+    for sample, df in all_samples.items()
+], axis=1)
+
+# Replace missing values with 0 and convert to integers
+combined_df = combined_df.fillna(0).astype(int)
+
+# Save as Excel file
+combined_df.to_excel("overview_viruses_per_sample.xlsx")
+
+print("Overview saved as: overview_viruses_per_sample.xlsx")
+</pre>
 
