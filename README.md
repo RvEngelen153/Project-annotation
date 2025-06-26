@@ -321,4 +321,37 @@ combined_df.to_excel("overview_viruses_per_sample.xlsx")
 
 print("Overview saved as: overview_viruses_per_sample.xlsx")
 </pre>
+# viga 
+one of the new methods 
+# installation 
+command to clone viga from github: 
+<pre>git clone https://github.com/EGTortuero/viga.git</pre>
+command to use the bash script that install all the needed tools:
+<pre>Bash install.sh</pre>
+# database 
+bash command to create a database for viga: 
+<pre>Create_dbs.sh</pre>
+
+# python script to create a modifier file 
+
+script to make the needed modifer file to run this tool: 
+<pre>modifiers = "[organism=] [subspecies=] [strain=] [moltype=DNA] [tech=] [gcode=11] [country=Netherlands] [isolation-source= goat feces] "
+ 
+input_file = "/mnt/StudentFiles/2025/2025MBI04/data_erasmus/UDI38_selected_contigs.fasta"
+output_file = "/mnt/StudentFiles/2025/2025MBI04/viga_modifier/UDI38_modified.fasta"
+ 
+with open(input_file, "r") as infile, open(output_file, "w") as outfile:
+    for line in infile:
+        if line.startswith(">"):
+            line = line.strip() + " " + modifiers + "\n"
+     outfile.write(line)
+</pre>
+
+         
+# runnen viga
+command to use the tool viga: 
+<pre>python3 VIGA.py --input /mnt/StudentFiles/2025/2025MBI04/data_erasmus/UDI38_selected_contigs.fasta --modifiers /mnt/StudentFiles/2025/2025MBI04/viga_modifier/UDI38_modified.fasta --out /mnt/StudentFiles/2025/2025MBI04/viga_output/UDI38/</pre>
+--input: path to input file 
+--modifier: path to own made modifier file 
+--out: path to output directory 
 
