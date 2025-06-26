@@ -9,12 +9,12 @@ The goal of this research was to investigate if there was a better tool availabl
 To evaluate the quality of the assembled contigs and rule out data-related issues that could interfere with downstream analysis, the 12 FASTA files provided by Erasmus MC were assessed using QUAST. 
 # Installation
 Conda installation command:
-<pre>conda install -c bioconda quast<pre>
+<pre>conda install -c bioconda quast</pre>
 # Input
 Fasta files from Erasmus MC
 # Running
 Command:
-<pre>quast -o quast_output -t 4 -m 500 UDI*.selected_contigs.fasta<pre>
+<pre>quast -o quast_output -t 4 -m 500 UDI*.selected_contigs.fasta</pre>
 #output
 a QUAST report: ![]()
 
@@ -340,14 +340,14 @@ print("Overview saved as: overview_viruses_per_sample.xlsx")
 The second method investigated was the EMG-pipeline VIRify, a workflow specifically designed to detect, annotate, and taxonomically classify viral contigs within metagenomic assemblies. VIRify integrates multiple tools to assess annotation quality, taxonomic identity, and genome completeness of viral sequences.
 # installation
 Nextflow installation:
-<pre>curl -s https://get.nextflow.io | bash<pre>
+<pre>curl -s https://get.nextflow.io | bash</pre>
 Nextflow pull:
-<pre>nextflow pull EBI-Metagenomics/emg-viral-pipeline<pre>
+<pre>nextflow pull EBI-Metagenomics/emg-viral-pipeline</pre>
 # Input
 Data given by Erasmus MC
 # Running the tool
 Command:
-<pre>nextflow run main.nf --assembly ~/data_erasmus/UDI*.selected_contigs.fasta --outdir output_VIRify<pre>
+<pre>nextflow run main.nf --assembly ~/data_erasmus/UDI*.selected_contigs.fasta --outdir output_VIRify</pre>
 # Output
 The output consist of multiple datasets seperated in low confidence, high confidence and prophages.
     
@@ -437,10 +437,10 @@ matrix <- ggplot(matrix_data, aes(x = virus_id, y = tool)) +
     legend.position = "none"
   )
 
-# 6. Combineer beide plots
+# 6. Combine both plots
 (bar / matrix) +
   plot_annotation(title = "Totaal aantal hits per virus met tooldetectie (bolletjes)")
-<pre>
+</pre>
 # Input
 A excel sheet with the amount of hits per tool and also in total but also seperated by sample.
 ![]()
