@@ -4,6 +4,20 @@ The commands and tools used during this project.
 The goal of this research was to investigate if there was a better tool available for annotation of viruses than diamond blastx. 
 # flowchart 
 ![](flowchart/flowchart.png)
+
+# QUAST assembly quality control
+To evaluate the quality of the assembled contigs and rule out data-related issues that could interfere with downstream analysis, the 12 FASTA files provided by Erasmus MC were assessed using QUAST. 
+# Installation
+Conda installation command:
+<pre>conda install -c bioconda quast<pre>
+# Input
+Fasta files from Erasmus MC
+# Running
+Command:
+<pre>quast -o quast_output -t 4 -m 500 UDI*.selected_contigs.fasta<pre>
+#output
+a QUAST report: ![]()
+
 # Diamondblastx
 This tool was used for this research as old method. 
 # Installation 
@@ -321,6 +335,22 @@ combined_df.to_excel("overview_viruses_per_sample.xlsx")
 
 print("Overview saved as: overview_viruses_per_sample.xlsx")
 </pre>
+
+# VIRify
+The second method investigated was the EMG-pipeline VIRify, a workflow specifically designed to detect, annotate, and taxonomically classify viral contigs within metagenomic assemblies. VIRify integrates multiple tools to assess annotation quality, taxonomic identity, and genome completeness of viral sequences.
+# installation
+Nextflow installation:
+<pre>curl -s https://get.nextflow.io | bash<pre>
+Nextflow pull:
+<pre>nextflow pull EBI-Metagenomics/emg-viral-pipeline<pre>
+# Input
+Data given by Erasmus MC
+# Running the tool
+Command:
+<pre>nextflow run main.nf --assembly ~/data_erasmus/UDI*.selected_contigs.fasta --outdir output_VIRify<pre>
+# Output
+The output consist of multiple datasets seperated in low confidence, high confidence and prophages.
+    
 # viga 
 one of the new methods 
 # installation 
@@ -355,3 +385,65 @@ command to use the tool viga:
 --modifier: path to own made modifier file 
 --out: path to output directory 
 
+# UPset plot
+A upset plot was made, showing per virus the total amount of hits identified by each tool (limited to those with eukaryotic hosts).
+# R script
+The R script run in R studios for the upset plot:
+<pre>
+#  packages
+library(readxl)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(patchwork)
+
+# 1. Data read in
+df <- read_excel("plot_table.xlsx", skip = 1)
+colnames(df) <- c("Virus", "Sample", "DIAMOND", "VIRify", "VIGA")
+
+# 2. Clean up and prep
+df <- df %>%
+  filter(!is.na(Virus)) %>%
+  mutate(across(c(DIAMOND, VIRify, VIGA), as.numeric)) %>%
+  mutate(
+    total_hits = DIAMOND + VIRify + VIGA
+  ) %>%
+  arrange(desc(total_hits)) %>%
+  mutate(virus_id = factor(Virus, levels = unique(Virus)))  # x-as volgorde
+
+# 3. Matrixdata: long format, that determines if there was at least 1 hit
+matrix_data <- df %>%
+  select(virus_id, DIAMOND, VIRify, VIGA) %>%
+  pivot_longer(cols = c(DIAMOND, VIRify, VIGA), names_to = "tool", values_to = "hits") %>%
+  mutate(hit = hits > 0)
+
+# 4. Barplot: total hits per virus
+bar <- ggplot(df, aes(x = virus_id, y = total_hits)) +
+  geom_col(fill = "steelblue") +
+  labs(y = "Totale hits", x = NULL) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8))
+
+# 5. Matrixplot down
+matrix <- ggplot(matrix_data, aes(x = virus_id, y = tool)) +
+  geom_point(aes(color = hit), size = 4) +
+  scale_color_manual(values = c("TRUE" = "black", "FALSE" = NA)) +
+  labs(x = NULL, y = NULL) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_text(size = 10),
+    panel.grid = element_blank(),
+    legend.position = "none"
+  )
+
+# 6. Combineer beide plots
+(bar / matrix) +
+  plot_annotation(title = "Totaal aantal hits per virus met tooldetectie (bolletjes)")
+<pre>
+# Input
+A excel sheet with the amount of hits per tool and also in total but also seperated by sample.
+![]()
+# Output:
+An upset plot:
+![]()
