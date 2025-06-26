@@ -16,7 +16,7 @@ Fasta files from Erasmus MC
 Command:
 <pre>quast -o quast_output -t 4 -m 500 UDI*.selected_contigs.fasta</pre>
 # Output
-a QUAST report: ![]()
+a QUAST report: ![](report.pdf)
 
 # Diamondblastx
 This tool was used for this research as old method. 
