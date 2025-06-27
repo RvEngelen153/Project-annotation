@@ -19,7 +19,7 @@ Command:
 a report was given by QUAST 
 
 # Diamondblastx
-This tool was used for this research as old method. 
+To facilitate the identification of viral sequences within metagenomic datasets, DIAMOND blastx offers a high-speed solution for aligning translated nucleotide sequences to protein reference databases such as NCBI-nr
 # Installation 
 To install this tool:
 <pre> bash wget http://github.com/bbuchfink/diamond/releases/download/v2.1.11/diamond-linux64.tar.gz <pre>
@@ -30,7 +30,9 @@ The following command download the NR database from the NCBI:
 <pre> wget ftp://ftp.ncbi.nlm.nih.gov/blast/db/nt*.tar.gz</pre>
 Make the database: 
 <pre>diamond makedb --in nt_viruses.fasta -d nt_viruses_db</pre>
-# Diamondblastx runnen
+# input
+Fasta files from Erasmus MC
+# Running
 usage of the diamondblastx tool:
 <pre>diamond blastx -d nr_db.dmnd -q /mnt/studentfiles/2025/2025MBI04/data_erasmus/UDI9_selected_contigs.fasta -o UDI9diamond.tsv --evalue 1e-5 --outfmt 6</pre>
 -q: path to input data
@@ -188,13 +190,15 @@ if __name__ == "__main__":
 
 From this output the viruses with an eukaryotic host were selected, to make the list with viruses with an eukaryotic host. 
 # vcontact3 
-one of the new methods 
+vConTACT3 clusters viral contigs based on shared protein content to infer taxonomy and diversity, producing distinct statistical outputs due to its network-based clustering approach. 
 # installation 
 Instalation of vcontact3:
 <pre>conda install -c bioconda vcontact3 </pre>
 # database 
 Download latest version of refseq database from Zenodo:
 <pre>vcontact3 prepare_databases --get-version "latest"</pre>
+# input 
+Fasta files from Erasmus MC
 # vcontact3 runnen
 command to use vcontact3:
 <pre>vcontact3 run --nucleotide /mnt/StudentFiles/2025/2025MBI04/data_erasmus/UDI36_selected_contigs.fasta --output /mnt/StudentFiles/2025/2025MBI04/output_vcontact3/UDI36  --db-version 220 --db-path /mnt/StudentFiles/2025/2025MBI04/vcontact3_db</pre>
@@ -377,14 +381,197 @@ with open(input_file, "r") as infile, open(output_file, "w") as outfile:
      outfile.write(line)
 </pre>
 
-         
-# runnen viga
+  # input
+  own made modifier file and fasta files from Erasmsus MC
+# running
 command to use the tool viga: 
 <pre>python3 VIGA.py --input /mnt/StudentFiles/2025/2025MBI04/data_erasmus/UDI38_selected_contigs.fasta --modifiers /mnt/StudentFiles/2025/2025MBI04/viga_modifier/UDI38_modified.fasta --out /mnt/StudentFiles/2025/2025MBI04/viga_output/UDI38/</pre>
 --input: path to input file 
 --modifier: path to own made modifier file 
 --out: path to output directory 
+# output
 
+# pyton script to select all unique viruses 
+Script to select all viruses from the output: 
+<pre>import pandas as pd  # Import the pandas library for data handling
+
+# === Settings ===
+input_file = "/mnt/StudentFiles/2025/2025MBI04/viga_output/UDI38/UDI38.csv"  
+# Define the input CSV file path (change this if analyzing another sample)
+
+output_file = "/mnt/StudentFiles/2025/2025MBI04/viga_output/UDI38/UDI38_all_viruses_viga_-,.csv"
+# Define the output file path where the summary will be saved
+
+# === Load the data ===
+df = pd.read_csv(input_file, sep=None, engine="python")  
+# Load the CSV file into a pandas DataFrame
+# sep=None allows automatic detection of delimiter (e.g., comma or tab)
+# engine="python" is required for autodetection of delimiters
+
+# === Check if required columns are present ===
+required_cols = ["Description", "size_aa", "Perc_ID", "Perc_Cov", "E-value"]
+# Define which columns must be present for the analysis
+
+missing_cols = [col for col in required_cols if col not in df.columns]
+# Create a list of missing columns by checking each required column
+
+if missing_cols:
+    raise ValueError(f"The following columns are missing from the input: {missing_cols}")
+    # Stop execution and report which columns are missing if any are not found
+
+# === Keep only the necessary columns ===
+df_relevant = df[required_cols].copy()
+# Make a copy of the DataFrame with only the required columns
+
+# === Remove rows with missing values ===
+df_relevant = df_relevant.dropna(subset=["Perc_ID", "Perc_Cov", "E-value"])
+# Remove rows that are missing any of the key numeric values
+
+# === Clean up virus names (remove commas) ===
+df_relevant["Virus"] = df_relevant["Description"].str.replace(",", "", regex=False)
+# Create a new column 'Virus' based on 'Description' but without commas
+# This prevents issues when exporting as CSV
+
+# === Count the number of hits per virus ===
+df_relevant["Hits"] = 1
+# Add a column where every row counts as one "hit"
+
+virus_counts = df_relevant.groupby("Virus")["Hits"].count().reset_index(name="Total_hits")
+# Group by virus name and count how many times each virus appears
+# Store result in a new DataFrame with columns: Virus and Total_hits
+
+# === Generate per-virus summary statistics ===
+summary = df_relevant.groupby("Virus").agg({
+    "size_aa": "mean",      # Average protein length
+    "Perc_ID": "mean",      # Average percent identity
+    "Perc_Cov": "mean",     # Average percent coverage
+    "E-value": "min"        # Best (smallest) E-value
+}).reset_index()
+# This creates a summary table with aggregated values per virus
+
+# === Merge summary with hit counts ===
+summary = summary.merge(virus_counts, on="Virus")
+# Add the total hit counts to the summary table by merging on the Virus column
+
+# === Save the summary to a new CSV file ===
+summary.to_csv(output_file, index=False)
+# Write the summary table to a CSV file
+# index=False prevents writing the DataFrame index as an extra column
+
+# === Confirmation message ===
+print(f"All viruses summarized and saved in: {output_file}")
+# Notify the user that the process is complete and show the file path
+   </pre>
+   
+# script to select viruses with statistical data
+<pre>import pandas as pd  # Import the pandas library for data processing
+
+# === Read the input file ===
+df = pd.read_csv('/mnt/StudentFiles/2025/2025MBI04/viga_output/UDI12/UDI12.csv', sep=';')
+# Load the CSV file from the specified path
+# The separator is a semicolon (;) instead of a comma
+
+# === Clean up column names ===
+df.columns = df.columns.str.strip()
+# Remove any leading or trailing spaces from column names to avoid errors later
+
+# === Print column names and their index positions (for debugging or inspection) ===
+for i, col in enumerate(df.columns):
+    print(f"{i}: {col}")
+# This loop prints each column name along with its index number
+# Helpful to find out which column holds the data you want (like E-value)
+
+# === Select the column by index ===
+evalue_col = df.columns[13]
+# Choose the 14th column (index 13, because Python uses zero-based indexing)
+# This is assumed to be the E-value column
+
+# === Filter rows where that column is not empty (i.e., not NA) ===
+filtered_df = df[df[evalue_col].notna()]
+# Keep only the rows where the E-value column has a value (not missing)
+
+# === Save the filtered data to a new file ===
+filtered_df.to_csv(
+    '/mnt/StudentFiles/2025/2025MBI04/viga_output/output_all/UDI12_e-value.csv',
+    sep='\t',  # Use tab as separator
+    index=False  # Do not include the index column in the output
+)
+
+# === Print confirmation ===
+print(f"Filtering complete based on column '{evalue_col}'. Output saved to 'filtered_output.tsv'.")
+# Notify the user that filtering was successful and show which column was used
+</pre>
+
+# script to count viruses
+
+<pre>import os  # Module for interacting with the file system
+import csv  # Module for reading and writing CSV files
+from collections import defaultdict  # To create default dictionaries with initial values
+
+def main():
+    # === List of input CSV files, one per sample ===
+    sample_files = [
+        "/mnt/StudentFiles/2025/2025MBI04/viga_output/UDI9/UDI9.csv",
+        "/mnt/StudentFiles/2025/2025MBI04/viga_output/UDI10/UDI10.csv",
+        "/mnt/StudentFiles/2025/2025MBI04/viga_output/UDI11/UDI11.csv",
+        "/mnt/StudentFiles/2025/2025MBI04/viga_output/UDI12/UDI12.csv",
+        "/mnt/StudentFiles/2025/2025MBI04/viga_output/UDI13/UDI13.csv",
+        "/mnt/StudentFiles/2025/2025MBI04/viga_output/UDI14/UDI14.csv",
+        "/mnt/StudentFiles/2025/2025MBI04/viga_output/UDI33/UDI33.csv",
+        "/mnt/StudentFiles/2025/2025MBI04/viga_output/UDI34/UDI34.csv",
+        "/mnt/StudentFiles/2025/2025MBI04/viga_output/UDI35/UDI35.csv",
+        "/mnt/StudentFiles/2025/2025MBI04/viga_output/UDI36/UDI36.csv",
+        "/mnt/StudentFiles/2025/2025MBI04/viga_output/UDI37/UDI37.csv",
+        "/mnt/StudentFiles/2025/2025MBI04/viga_output/UDI38/UDI38.csv"
+    ]
+
+    # === Dictionary to store virus counts across all samples ===
+    # Each virus maps to a list of counts: [count_sample1, count_sample2, ..., count_sample12, total_count]
+    virus_counts = defaultdict(lambda: [0] * (len(sample_files) + 1))  # +1 is for total count
+
+    # === Loop over each file (one per sample) ===
+    for idx, filepath in enumerate(sample_files):
+        with open(filepath, newline='') as csvfile:
+            reader = csv.DictReader(csvfile, delimiter=';')  # Use semicolon as delimiter
+            if 'Description' not in reader.fieldnames:
+                # If the expected column is missing, report and skip this file
+                print(f"ERROR: 'Description' column not found in {filepath}")
+                continue
+
+            # === Process each row ===
+            for row in reader:
+                virus = row['Description'].strip()  # Remove any extra spaces
+                if virus:
+                    virus_counts[virus][idx] += 1  # Count this virus in the current sample
+                    virus_counts[virus][-1] += 1   # Also add to the total count
+
+    # === Create output folder if it doesn't exist ===
+    output_dir = "/mnt/StudentFiles/2025/2025MBI04/viga_output/output_all"
+    os.makedirs(output_dir, exist_ok=True)  # Don't throw error if directory already exists
+
+    # === Define and open the output file ===
+    output_file = os.path.join(output_dir, "virus_counts_by_description.csv")
+    with open(output_file, 'w', newline='') as outcsv:
+        writer = csv.writer(outcsv)
+
+        # === Write header row ===
+        sample_names = [f"Sample_{i+1}" for i in range(len(sample_files))]  # Sample_1, Sample_2, ...
+        header = ["Virus"] + sample_names + ["Total"]
+        writer.writerow(header)
+
+        # === Write counts per virus ===
+        for virus in sorted(virus_counts):
+            row = [virus] + virus_counts[virus]
+            writer.writerow(row)
+
+    # === Print confirmation ===
+    print(f"Output written to {output_file}")
+
+# === Run the main function ===
+if __name__ == "__main__":
+    main()
+# This check ensures the script runs only when executed directly (not when imported as a module)
+</pre>
 # UPset plot
 A upset plot was made, showing per virus the total amount of hits identified by each tool (limited to those with eukaryotic hosts).
 # R script
@@ -447,3 +634,4 @@ A excel sheet with the amount of hits per tool and also in total but also sepera
 # Output:
 An upset plot:
 ![](Upset.png)
+# Venn diagram 
