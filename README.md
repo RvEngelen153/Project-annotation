@@ -356,7 +356,7 @@ Command:
 The output consist of multiple datasets seperated in low confidence, high confidence and prophages.
     
 # viga 
-one of the new methods 
+VIGA was the third method evaluated, providing detailed viral genome annotations by identifying coding regions, functional domains, and key proteins through similarity searches and hidden Markov models.  
 # installation 
 command to clone viga from github: 
 <pre>git clone https://github.com/EGTortuero/viga.git</pre>
@@ -390,6 +390,28 @@ command to use the tool viga:
 --modifier: path to own made modifier file 
 --out: path to output directory 
 # output
+viga generates one important output file for example named:  UDI9.csv
+The output of this file looks like this: 
+| Column Number | Column Name         | Description                                                                 |
+|---------------|---------------------|-----------------------------------------------------------------------------|
+| 1             | Contig              | Name or ID of the contig the protein was predicted from                    |
+| 2             | Protein ID          | Unique identifier of the predicted protein                                 |
+| 3             | Start               | Start position of the ORF on the contig                                    |
+| 4             | Stop                | Stop position of the ORF on the contig                                     |
+| 5             | Strand              | DNA strand the ORF is located on (+ or -)                                  |
+| 6             | size_aa             | Length of the predicted protein in amino acids                             |
+| 7             | pI                  | Isoelectric point (predicted pH at which the protein has no net charge)    |
+| 8             | Mol_weight_kDa      | Molecular weight of the protein in kilodaltons                             |
+| 9             | Instability_index   | Protein stability index; values >40 suggest instability                     |
+| 10            | Description         | Functional annotation or predicted description of the protein              |
+| 11            | Source              | Origin of the annotation (e.g., database/tool used)                        |
+| 12            | Perc_ID             | Percentage identity with best hit (e.g., from BLAST)                       |
+| 13            | Perc_Cov            | Percentage coverage of the query compared to the hit                       |
+| 14            | E-value             | E-value of the match from the annotation tool                              |
+| 15            | HMMer               | HMM profile name or ID (if identified by HMMer)                            |
+| 16            | HMMer_Perc_Cov      | Coverage of the HMM model matched                                          |
+| 17            | HMMer_E-value       | E-value from HMMer matching                                                 |
+
 
 # pyton script to select all unique viruses 
 Script to select all viruses from the output: 
